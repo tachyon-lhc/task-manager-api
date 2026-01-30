@@ -32,3 +32,21 @@ def init_db():
     conn.close()
 
     print("Base de datos inicializada")
+
+
+def create_task(title, description="", priority="medium"):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    created_at = datetime.now().isoformat()
+
+    cursor.execute(
+        "INSERT INTO tasks (title, description, priority, created_at) VALUES (?, ?, ?, ?)",
+        (title, description, priority, created_at),
+    )
+
+    conn.commit()
+    task_id = cursor.lastrowid
+    conn.close()
+
+    return task_id
