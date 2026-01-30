@@ -50,3 +50,20 @@ def create_task(title, description="", priority="medium"):
     conn.close()
 
     return task_id
+
+
+def get_all_tasks():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM tasks")
+
+    rows = cursor.fetchall()
+    tasks_list = [dict(row) for row in rows]
+    conn.close()
+
+    return tasks_list
+
+
+def get_task_by_id():
+    pass
