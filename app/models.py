@@ -65,5 +65,57 @@ def get_all_tasks():
     return tasks_list
 
 
-def get_task_by_id():
-    pass
+def get_task_by_id(task_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+
+    row = cursor.fetchone()
+    task = dict(row) if row else None
+
+    conn.close()
+
+    return task
+
+
+def update_task(task_id, title=None, description=None, completed=None, priority=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    task = get_task_by_id(task_id)
+    if not task:
+        return False
+
+    new_title = title if title is not None else task["title"]
+    new_description = description if description is not None else task["description"]
+    new_completed = completed if completed is not None else task["completed"]
+    new_priority = priority if priority is not None else task["priority"]
+
+    updated_at = datetime.now().isoformat()
+
+    cursor.execute(
+        "UPDATE tasks SET title=?, description=?, completed=?, priority=?, updated_at=? WHERE id=?",
+        (new_title, new_description, new_completed, new_priority, updated_at, task_id),
+    )
+
+    conn.commit()
+    conn.close()
+
+    return True
+
+
+def delete_task(task_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    task = get_task_by_id(task_id)
+    if not task:
+        return False
+
+    cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+
+    conn.commit()
+    conn.close()
+
+    return True
