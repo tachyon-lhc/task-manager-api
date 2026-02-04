@@ -3,17 +3,17 @@ from pathlib import Path
 from datetime import datetime
 
 # Ruta a la base de datos en instance/
-DATABASE = Path(__file__).parent.parent / "instance" / "tasks.db"
+DEFAULT_DATABASE = Path(__file__).parent.parent / "instance" / "tasks.db"
 
 
-def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+def get_db_connection(db_path=DEFAULT_DATABASE):
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-def init_db():
-    conn = get_db_connection()
+def init_db(db_path=DEFAULT_DATABASE):
+    conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     cursor.execute(
@@ -34,8 +34,8 @@ def init_db():
     print("Base de datos inicializada")
 
 
-def create_task(title, description="", priority="medium"):
-    conn = get_db_connection()
+def create_task(title, description="", priority="medium", db_path=DEFAULT_DATABASE):
+    conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     created_at = datetime.now().isoformat()
@@ -52,8 +52,8 @@ def create_task(title, description="", priority="medium"):
     return task_id
 
 
-def get_all_tasks():
-    conn = get_db_connection()
+def get_all_tasks(db_path=DEFAULT_DATABASE):
+    conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM tasks")
@@ -65,8 +65,8 @@ def get_all_tasks():
     return tasks_list
 
 
-def get_task_by_id(task_id):
-    conn = get_db_connection()
+def get_task_by_id(task_id, db_path=DEFAULT_DATABASE):
+    conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
@@ -79,8 +79,15 @@ def get_task_by_id(task_id):
     return task
 
 
-def update_task(task_id, title=None, description=None, completed=None, priority=None):
-    conn = get_db_connection()
+def update_task(
+    task_id,
+    title=None,
+    description=None,
+    completed=None,
+    priority=None,
+    db_path=DEFAULT_DATABASE,
+):
+    conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     task = get_task_by_id(task_id)
@@ -105,8 +112,8 @@ def update_task(task_id, title=None, description=None, completed=None, priority=
     return True
 
 
-def delete_task(task_id):
-    conn = get_db_connection()
+def delete_task(task_id, db_path=DEFAULT_DATABASE):
+    conn = get_db_connection(db_path)
     cursor = conn.cursor()
 
     task = get_task_by_id(task_id)
@@ -119,3 +126,11 @@ def delete_task(task_id):
     conn.close()
 
     return True
+
+
+def clear_tasks(db_path=DEFAULT_DATABASE):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tasks")
+    conn.commit()
+    conn.close()
